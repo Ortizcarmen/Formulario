@@ -14,16 +14,48 @@ namespace Formulario
 {
     public partial class Form1 : Form
     {
+        List <Url> urls = new List<Url>();
         public Form1()
         {
             InitializeComponent();
         }
+        
+        private void leer()
+        {
+            string fileName = "historial.txt";
+            FileStream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            StreamReader reader = new StreamReader(stream);
 
+            while(reader.Peek() > -1)
+            {
+                Url url = new Url();
+                url.Pagina = reader.ReadLine();
+                url.Veces = Convert.ToInt32(reader.ReadLine());
+                url.Fecha = Convert.ToDateTime(reader.ReadLine());
+
+                urls.Add(url);
+            }
+        }
+
+        private void Grabar (string fileName)
+        {
+            FileStream stream = new FileStream (fileName, FileMode.OpenOrCreate, FileAccess.Write);
+            StreamWriter writer = new StreamWriter(stream);
+
+            foreach (var u in urls)
+            {
+                writer.WriteLine(u.Pagina);
+                writer.WriteLine(u.Veces);
+                writer.WriteLine(u.Fecha);
+            }
+            writer.Close();
+        }
         private void Guardar(string fileName, string texto)
         {
-            FileStream stream = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write);
+            FileStream stream = new FileStream(fileName, FileMode.Append, FileAccess.Write);
             StreamWriter writer = new StreamWriter(stream);
             writer.WriteLine(texto);
+            //Cerrar el archivo
             writer.Close();
         }
         private void button1_Click(object sender, EventArgs e)
@@ -41,6 +73,24 @@ namespace Formulario
                     webView21.CoreWebView2.Navigate(comboBox1.Text);
                 }
             }
+            string urlIngresada = comboBox1.Text;
+            Url urlExiste = urls.Find(u=> u.Pagina == urlIngresada);
+            if (urlExiste == null)
+            {
+                Url urlNueva = new Url();
+                urlNueva.Pagina = urlIngresada;
+                urlNueva.Veces = 1;
+                urlNueva.Fecha = DateTime.Now;
+                urls.Add(urlNueva);
+                Grabar("historial.txt");
+            }
+            else
+            {
+                urlExiste.Veces++;
+                urlExiste.Fecha = DateTime.Now;
+                Grabar("historial.txt");
+            }
+           
         }
 
         private void webBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
@@ -78,19 +128,20 @@ namespace Formulario
 
         private void Form1_Load(object sender, EventArgs e)
         {
-                string fileName = "Hola";
+            leer();
+            string fileName = "Progra.txt";
 
-                
-                FileStream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-                StreamReader reader = new StreamReader(stream);
-                while (reader.Peek() > -1)
-                
+            if (File.Exists(fileName))
+            {
+                using (StreamReader reader = new StreamReader(fileName))
                 {
-                    comboBox1.Items.Add(reader.ReadLine());
+                    while (!reader.EndOfStream)
+                    {
+                        comboBox1.Items.Add(reader.ReadLine());
+                    }
                 }
-                
-                reader.Close();
-          
+            }
         }
+
     }
-}
+ }
