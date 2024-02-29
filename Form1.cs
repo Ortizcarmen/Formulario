@@ -35,6 +35,7 @@ namespace Formulario
 
                 urls.Add(url);
             }
+            reader.Close();
         }
 
         private void Grabar (string fileName)
@@ -129,18 +130,6 @@ namespace Formulario
         private void Form1_Load(object sender, EventArgs e)
         {
             leer();
-            string fileName = "Progra.txt";
-
-            if (File.Exists(fileName))
-            {
-                using (StreamReader reader = new StreamReader(fileName))
-                {
-                    while (!reader.EndOfStream)
-                    {
-                        comboBox1.Items.Add(reader.ReadLine());
-                    }
-                }
-            }
         }
 
     }
